@@ -7,7 +7,6 @@ from django.contrib.sites.models import Site
 from django.contrib.sites.managers import CurrentSiteManager
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
-from django.db.models import permalink
 from django.template.loader import select_template
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
@@ -17,7 +16,6 @@ from django.utils.timezone import now
 
 from sorl.thumbnail import ImageField
 from distutils.version import LooseVersion
-
 
 from .compat import get_context, reverse
 from .utils import (
@@ -105,39 +103,29 @@ class Newsletter(models.Model):
         verbose_name = _('newsletter')
         verbose_name_plural = _('newsletters')
 
-    @permalink
     def get_absolute_url(self):
-        return (
-            'newsletter_detail', (),
-            {'newsletter_slug': self.slug}
-        )
+        return reverse('newsletter_detail', kwargs={'newsletter_slug': self.slug})
 
-    @permalink
     def subscribe_url(self):
-        return (
-            'newsletter_subscribe_request', (),
-            {'newsletter_slug': self.slug}
+        return reverse(
+            'newsletter_subscribe_request',
+            kwargs={'newsletter_slug': self.slug}
         )
 
-    @permalink
     def unsubscribe_url(self):
-        return (
-            'newsletter_unsubscribe_request', (),
-            {'newsletter_slug': self.slug}
+        return reverse(
+            'newsletter_unsubscribe_request', kwargs={'newsletter_slug': self.slug}
         )
 
-    @permalink
     def update_url(self):
-        return (
-            'newsletter_update_request', (),
-            {'newsletter_slug': self.slug}
+        return reverse(
+            'newsletter_update_request', kwargs={'newsletter_slug': self.slug}
         )
 
-    @permalink
     def archive_url(self):
-        return (
-            'newsletter_archive', (),
-            {'newsletter_slug': self.slug}
+        return reverse(
+            'newsletter_archive',
+            kwargs={'newsletter_slug': self.slug}
         )
 
     def get_sender(self):
@@ -273,7 +261,7 @@ class Subscription(models.Model):
             # If we are subscribed now and we used not to be so, subscribe.
             # If we user to be unsubscribed but are not so anymore, subscribe.
             if ((self.subscribed and not old_subscribed) or
-               (old_unsubscribed and not self.unsubscribed)):
+                    (old_unsubscribed and not self.unsubscribed)):
                 self._subscribe()
 
                 assert not self.unsubscribed
@@ -390,27 +378,24 @@ class Subscription(models.Model):
             }
         )
 
-    @permalink
     def subscribe_activate_url(self):
-        return ('newsletter_update_activate', (), {
+        return reverse('newsletter_update_activate', kwargs={
             'newsletter_slug': self.newsletter.slug,
             'email': self.email,
             'action': 'subscribe',
             'activation_code': self.activation_code
         })
 
-    @permalink
     def unsubscribe_activate_url(self):
-        return ('newsletter_update_activate', (), {
+        return reverse('newsletter_update_activate', kwargs={
             'newsletter_slug': self.newsletter.slug,
             'email': self.email,
             'action': 'unsubscribe',
             'activation_code': self.activation_code
         })
 
-    @permalink
     def update_activate_url(self):
-        return ('newsletter_update_activate', (), {
+        return reverse('newsletter_update_activate', kwargs={
             'newsletter_slug': self.newsletter.slug,
             'email': self.email,
             'action': 'update',
@@ -470,6 +455,7 @@ class Article(models.Model):
 
 def get_default_newsletter():
     return Newsletter.get_default()
+
 
 @python_2_unicode_compatible
 class Message(models.Model):
@@ -664,7 +650,8 @@ class Submission(models.Model):
         submission.newsletter = message.newsletter
         submission.save()
         try:
-            submission.subscriptions.set(message.newsletter.get_subscriptions())
+            submission.subscriptions.set(
+                message.newsletter.get_subscriptions())
         except AttributeError:  # Django < 1.10
             submission.subscriptions = message.newsletter.get_subscriptions()
         return submission
@@ -677,13 +664,12 @@ class Submission(models.Model):
 
         return super(Submission, self).save()
 
-    @permalink
     def get_absolute_url(self):
         assert self.newsletter.slug
         assert self.message.slug
 
-        return (
-            'newsletter_archive_detail', (), {
+        return reverse(
+            'newsletter_archive_detail', kwargs={
                 'newsletter_slug': self.newsletter.slug,
                 'year': self.publish_date.year,
                 'month': self.publish_date.month,
@@ -730,6 +716,7 @@ class Submission(models.Model):
         default=False, verbose_name=_('sending'),
         db_index=True, editable=False
     )
+
 
 def get_address(name, email):
     # Converting name to ascii for compatibility with django < 1.9.
