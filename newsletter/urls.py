@@ -7,6 +7,8 @@ from .views import (
     ActionTemplateView, UpdateSubscriptionView,
 )
 
+app_name = 'newsletter'
+
 urlpatterns = [
     # Newsletter list and detail view
     surl('^$', NewsletterListView.as_view(), name='newsletter_list'),
