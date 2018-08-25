@@ -104,27 +104,27 @@ class Newsletter(models.Model):
         verbose_name_plural = _('newsletters')
 
     def get_absolute_url(self):
-        return reverse('newsletter_detail', kwargs={'newsletter_slug': self.slug})
+        return reverse('newsletter:newsletter_detail', kwargs={'newsletter_slug': self.slug})
 
     def subscribe_url(self):
         return reverse(
-            'newsletter_subscribe_request',
+            'newsletter:newsletter_subscribe_request',
             kwargs={'newsletter_slug': self.slug}
         )
 
     def unsubscribe_url(self):
         return reverse(
-            'newsletter_unsubscribe_request', kwargs={'newsletter_slug': self.slug}
+            'newsletter:newsletter_unsubscribe_request', kwargs={'newsletter_slug': self.slug}
         )
 
     def update_url(self):
         return reverse(
-            'newsletter_update_request', kwargs={'newsletter_slug': self.slug}
+            'newsletter:newsletter_update_request', kwargs={'newsletter_slug': self.slug}
         )
 
     def archive_url(self):
         return reverse(
-            'newsletter_archive',
+            'newsletter:newsletter_archive',
             kwargs={'newsletter_slug': self.slug}
         )
 
@@ -379,7 +379,7 @@ class Subscription(models.Model):
         )
 
     def subscribe_activate_url(self):
-        return reverse('newsletter_update_activate', kwargs={
+        return reverse('newsletter:newsletter_update_activate', kwargs={
             'newsletter_slug': self.newsletter.slug,
             'email': self.email,
             'action': 'subscribe',
@@ -387,7 +387,7 @@ class Subscription(models.Model):
         })
 
     def unsubscribe_activate_url(self):
-        return reverse('newsletter_update_activate', kwargs={
+        return reverse('newsletter:newsletter_update_activate', kwargs={
             'newsletter_slug': self.newsletter.slug,
             'email': self.email,
             'action': 'unsubscribe',
@@ -395,7 +395,7 @@ class Subscription(models.Model):
         })
 
     def update_activate_url(self):
-        return reverse('newsletter_update_activate', kwargs={
+        return reverse('newsletter:newsletter_update_activate', kwargs={
             'newsletter_slug': self.newsletter.slug,
             'email': self.email,
             'action': 'update',
@@ -549,7 +549,7 @@ class Submission(models.Model):
         return {
             'List-Unsubscribe': 'http://%s%s' % (
                 Site.objects.get_current().domain,
-                reverse('newsletter_unsubscribe_request',
+                reverse('newsletter:newsletter_unsubscribe_request',
                         args=[self.message.newsletter.slug])
             ),
         }
@@ -669,7 +669,7 @@ class Submission(models.Model):
         assert self.message.slug
 
         return reverse(
-            'newsletter_archive_detail', kwargs={
+            'newsletter:newsletter_archive_detail', kwargs={
                 'newsletter_slug': self.newsletter.slug,
                 'year': self.publish_date.year,
                 'month': self.publish_date.month,
